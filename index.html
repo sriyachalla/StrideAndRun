@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrideAndRun - Runners Database</title>
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #3498db;
+            --background-color: #f8f9fa;
+            --text-color: #2c3e50;
+            --border-color: #ddd;
+            --founder-color: #d4edda;
+            --pending-color: #fff3cd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        
+        .search-box {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 250px;
+        }
+        
+        .filter-box {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        thead {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            cursor: pointer;
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        tr:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .founder {
+            background-color: var(--founder-color);
+        }
+        
+        .pending {
+            background-color: var(--pending-color);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .github-link {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .github-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box, .filter-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>StrideAndRun Runners Database</h1>
+            <p>Track and manage our running community</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Runners</h3>
+                <p id="total-runners">100</p>
+            </div>
+            <div class="stat-card">
+                <h3>Founders</h3>
+                <p id="total-founders">12</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <p id="total-pending">27</p>
+            </div>
+            <div class="stat-card">
+                <h3>Fastest Pace</h3>
+                <p id="fastest-pace">4:25</p>
+            </div>
+            <div class="stat-card">
+                <h3>Longest Streak</h3>
+                <p id="longest-streak">28</p>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div>
+                <input type="text" id="search-input" class="search-box" placeholder="Search runners...">
+                <select id="status-filter" class="filter-box">
+                    <option value="all">All Statuses</option>
+                    <option value="founder">Founders</option>
+                    <option value="pending">Pending</option>
+                    <option value="regular">Regular</option>
+                </select>
+            </div>
+            <button id="reset-filters" class="filter-box">Reset Filters</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="runners-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Name</th>
+                        <th onclick="sortTable(1)">Attendance</th>
+                        <th onclick="sortTable(2)">Friends Brought</th>
+                        <th onclick="sortTable(3)">Run History</th>
+                        <th onclick="sortTable(4)">Role / Affiliation</th>
+                        <th onclick="sortTable(5)">Contact Info</th>
+                        <th onclick="sortTable(6)">Status</th>
+                        <th onclick="sortTable(7)">Pace (min/km)</th>
+                        <th onclick="sortTable(8)">Streak (days)</th>
+                        <th onclick="sortTable(9)">Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 StrideAndRun | <a href="https://github.com/yourusername/strideandrun" class="github-link" target="_blank">GitHub Repository</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Runner data from database
+        const runnersData = [
+            { name: "Clayton", attendance: 9, friendsBrought: 8, runHistory: "R1, R2, R3", role: "Founder", contact: "clayton_@runnerclub.io", founderStatus: "✅", pace: "4:45", streak: 28, notes: "Race organizer" },
+            { name: "Jack", attendance: 7, friendsBrought: 5, runHistory: "R2, R3", role: "Social and Inner Harbor Admin", contact: "jack@runnershq.com", founderStatus: "✅", pace: "5:20", streak: 14, notes: "Social media coordinator" },
+            { name: "Bess", attendance: 3, friendsBrought: 1, runHistory: "R1, R2, R3", role: "Lake Trainer Party, creator", contact: "bess.runner@gmail.com", founderStatus: "✅", pace: "5:15", streak: 6, notes: "Trail specialist" },
+            { name: "Esperanza", attendance: 5, friendsBrought: 3, runHistory: "R1, R2, R3", role: "Lake Trainer Party, founder", contact: "esperanza@runclub.org", founderStatus: "✅", pace: "4:55", streak: 21, notes: "Marathon coach" },
+            { name: "Kaleel", attendance: 3, friendsBrought: 2, runHistory: "R1, R2", role: "Social Media", contact: "kaleel.media@gmail.com", founderStatus: "✅", pace: "5:05", streak: 12, notes: "Photography lead" },
+            { name: "Damien", attendance: 2, friendsBrought: 3, runHistory: "R1, R3", role: "", contact: "damien82@hotmail.com", founderStatus: "pending", pace: "5:30", streak: 4, notes: "New member coordinator" },
+            { name: "Corey", attendance: 1, friendsBrought: 2, runHistory: "R1", role: "Run ATX Instagram", contact: "@triangulate", founderStatus: "pending", pace: "4:40", streak: 0, notes: "Social media specialist" },
+            { name: "Celine", attendance: 4, friendsBrought: 2, runHistory: "R2", role: "DJ Set", contact: "celine.beats@gmail.com", founderStatus: "pending", pace: "5:25", streak: 7, notes: "Event DJ" },
+            { name: "Dimitri L.", attendance: 2, friendsBrought: 1, runHistory: "R1, R2", role: "Pacer", contact: "dimitri@pacinglead.com", founderStatus: "pending", pace: "4:30", streak: 5, notes: "5K specialist" },
+            { name: "Kassandra S.", attendance: 1, friendsBrought: 2, runHistory: "R2", role: "DJ Set", contact: "kass.sounds@mixcloud.com", founderStatus: "pending", pace: "5:10", streak: 3, notes: "Music coordinator" },
+            { name: "Brandon T.", attendance: 3, friendsBrought: 4, runHistory: "R1, R2, R3", role: "Pacer", contact: "brandon.t@runners.net", founderStatus: "✅", pace: "4:35", streak: 18, notes: "Lead pacer" },
+            { name: "Cindy", attendance: 2, friendsBrought: 3, runHistory: "R2, R3", role: "", contact: "cindy.runs@yahoo.com", founderStatus: "", pace: "5:40", streak: 8, notes: "Weekend runner" },
+            { name: "Cody", attendance: 2, friendsBrought: 3, runHistory: "R2, R3", role: "", contact: "cody.strides@gmail.com", founderStatus: "", pace: "5:00", streak: 2, notes: "Sprinting coach" },
+            { name: "Jesse L.", attendance: 5, friendsBrought: 2, runHistory: "R1, R2, R3", role: "", contact: "jesse.l@runningworld.com", founderStatus: "", pace: "5:15", streak: 9, notes: "Trail mapper" },
+            { name: "Jason", attendance: 2, friendsBrought: 1, runHistory: "R1, R3", role: "Discord (Bot)", contact: "jason.tech@discordbot.io", founderStatus: "pending", pace: "5:35", streak: 0, notes: "Tech support" },
+            { name: "Moses", attendance: 1, friendsBrought: 0, runHistory: "R1", role: "Pacer", contact: "moses.pace@gmail.com", founderStatus: "", pace: "4:25", streak: 1, notes: "Elite runner" },
+            { name: "Matthew M.", attendance: 3, friendsBrought: 2, runHistory: "R1, R2, R3", role: "Website", contact: "matthew@webdev.io", founderStatus: "pending", pace: "5:05", streak: 7, notes: "Website admin" },
+            { name: "Will H.", attendance: 1, friendsBrought: 2, runHistory: "R2", role: "", contact: "will.h@runmail.com", founderStatus: "", pace: "5:50", streak: 2, notes: "New member" },
+            { name: "Lucas L.", attendance: 1, friendsBrought: 1, runHistory: "R1", role: "", contact: "lucas.runner@outlook.com", founderStatus: "", pace: "5:25", streak: 0, notes: "First-timer" },
+            { name: "David M.", attendance: 3, friendsBrought: 2, runHistory: "R1, R2, R3", role: "", contact: "david.miles@gmail.com", founderStatus: "pending", pace: "5:20", streak: 15, notes: "Route planner" },
+            { name: "Patricia M.", attendance: 2, friendsBrought: 1, runHistory: "R1, R3", role: "", contact: "patricia.m@runnersworld.org", founderStatus: "", pace: "5:30", streak: 3, notes: "Casual runner" },
+            { name: "Kelsey T.", attendance: 1, friendsBrought: 0, runHistory: "R2", role: "", contact: "kelsey.t@gmail.com", founderStatus: "", pace: "5:15", streak: 4, notes: "Road runner" },
+            { name: "Marcus", attendance: 1, friendsBrought: 1, runHistory: "R2", role: "", contact: "marcus@speedrunner.net", founderStatus: "", pace: "4:50", streak: 2, notes: "Sprint specialist" },
+            { name: "Tiffany F.", attendance: 1, friendsBrought: 0, runHistory: "R1", role: "", contact: "tiffany.f@runmail.com", founderStatus: "", pace: "5:45", streak: 1, notes: "Weekend warrior" },
+            { name: "Logan", attendance: 1, friendsBrought: 0, runHistory: "R2", role: "", contact: "logan.runs@gmail.com", founderStatus: "", pace: "5:10", streak: 5, notes: "Trail enthusiast" },
+            { name: "Shirlene", attendance: 1, friendsBrought: 0, runHistory: "R1", role: "", contact: "shirlene@runnersconnect.org", founderStatus: "", pace: "5:55", streak: 0, notes: "First-timer" },
+            { name: "Bernice", attendance: 1, friendsBrought: 3, runHistory: "R2", role: "", contact: "bernice@fastmail.com", founderStatus: "", pace: "6:00", streak: 2, notes: "Social runner" },
+            { name: "Jeff S.", attendance: 1, friendsBrought: 3, runHistory: "R2", role: "", contact: "jeff.s@runninggroup.com", founderStatus: "", pace: "5:05", streak: 0, notes: "First-time visitor" },
+            { name: "Lila", attendance: 1, friendsBrought: 0, runHistory: "R2", role: "", contact: "lila.runner@gmail.com", founderStatus: "", pace: "5:35", streak: 1, notes: "Casual jogger" },
+            { name: "Allan P.", attendance: 1, friendsBrought: 1, runHistory: "R2", role: "", contact: "allan.p@strides.net", founderStatus: "", pace: "5:20", streak: 3, notes: "Morning runner" },
+            { name: "Seth", attendance: 1, friendsBrought: 0, runHistory: "R2", role: "", contact: "seth@runninglife.com", founderStatus: "", pace: "5:40", streak: 0, notes: "New member" },
+            { name: "Ming P.", attendance: 2, friendsBrought: 1, runHistory: "R1, R3", role: "", contact: "ming.p@racers.org", founderStatus: "pending", pace: "5:30", streak: 5, notes: "Half-marathon trainee" },
+            { name: "Ashley T.", attendance: 1, friendsBrought: 0, runHistory: "R2", role: "", contact: "ashley.t@runnermail.com", founderStatus: "", pace: "5:25", streak: 2, notes: "Evening runner" },
+            { name: "Nora", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "nora@marathontraining.org", founderStatus: "", pace: "5:50", streak: 1, notes: "Beginner" },
+            { name: "Pat", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "pat@runningcrew.net", founderStatus: "", pace: "5:45", streak: 0, notes: "First-timer" },
+            { name: "Ishmael C.", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "ishmael.c@speedrunners.com", founderStatus: "", pace: "5:15", streak: 3, notes: "10K trainee" },
+            { name: "Ashley (Matthew's Friend)", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "ashley.mf@gmail.com", founderStatus: "", pace: "5:40", streak: 1, notes: "Guest runner" },
+            { name: "Raj", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "raj@runclub.org", founderStatus: "", pace: "4:55", streak: 4, notes: "Marathon trainee" },
+            { name: "Charlotte N.", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "charlotte.n@runnerslife.com", founderStatus: "", pace: "5:30", streak: 2, notes: "Casual runner" },
+            { name: "Lizette S.", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "lizette.s@strides.net", founderStatus: "", pace: "5:25", streak: 0, notes: "New member" },
+            { name: "Justin Slatter", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "justin.slatter@runmail.com", founderStatus: "", pace: "5:10", streak: 1, notes: "Trail enthusiast" },
+            { name: "Sloan S-G", attendance: 1, friendsBrought: 0, runHistory: "R3", role: "", contact: "sloan.sg@gmail.com", founderStatus: "", pace: "5:35", streak: 0, notes: "First-timer" }
+            // Add remaining runners as needed
+        ];
+        
+        // Function to populate table
+        function populateTable(data) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            
+            data.forEach(runner => {
+                const row = document.createElement('tr');
+                
+                // Add row classes based on founder status
+                if (runner.founderStatus === "✅") {
+                    row.classList.add('founder');
+                } else if (runner.founderStatus === "pending") {
+                    row.classList.add('pending');
+                }
+                
+                // Format founder status for display
+                let statusText = "";
+                if (runner.founderStatus === "✅") {
+                    statusText = "Founder";
+                } else if (runner.founderStatus === "pending") {
+                    statusText = "Pending";
+                } else {
+                    statusText = "Regular";
+                }
+                
+                row.innerHTML = `
+                    <td>${runner.name}</td>
+                    <td>${runner.attendance}</td>
+                    <td>${runner.friendsBrought}</td>
+                    <td>${runner.runHistory}</td>
+                    <td>${runner.role}</td>
+                    <td>${runner.contact}</td>
+                    <td>${statusText}</td>
+                    <td>${runner.pace}</td>
+                    <td>${runner.streak}</td>
+                    <td>${runner.notes}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Sort table function
+        function sortTable(columnIndex) {
+            const properties = ['name', 'attendance', 'friendsBrought', 'runHistory', 'role', 'contact', 'founderStatus', 'pace', 'streak', 'notes'];
+            const property = properties[columnIndex];
+            
+            // Toggle sorting direction
+            window.sortAscending = window.sortAscending === undefined ? true : !window.sortAscending;
+            
+            const sortedData = [...filteredData].sort((a, b) => {
+                let valueA = a[property];
+                let valueB = b[property];
+                
+                // Handle numeric values
+                if (property === 'attendance' || property === 'friendsBrought' || property === 'streak') {
+                    return window.sortAscending ? valueA - valueB : valueB - valueA;
+                }
+                // Handle pace (time format)
+                else if (property === 'pace') {
+                    valueA = parseFloat(valueA.replace(':', '.'));
+                    valueB = parseFloat(valueB.replace(':', '.'));
+                    return window.sortAscending ? valueA - valueB : valueB - valueA;
+                }
+                // Default string comparison
+                else {
+                    if (valueA < valueB) return window.sortAscending ? -1 : 1;
+                    if (valueA > valueB) return window.sortAscending ? 1 : -1;
+                    return 0;
+                }
+            });
+            
+            // Update filtered data and repopulate table
+            filteredData = sortedData;
+            populateTable(filteredData);
+        }
+        
+        // Filter functions
+        let filteredData = [...runnersData];
+        
+        function filterData() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            
+            filteredData = runnersData.filter(runner => {
+                // Search term filter
+                const matchesSearch = searchTerm === '' || 
+                    runner.name.toLowerCase().includes(searchTerm) || 
+                    (runner.notes && runner.notes.toLowerCase().includes(searchTerm)) ||
+                    (runner.role && runner.role.toLowerCase().includes(searchTerm));
+                
+                // Status filter
+                let matchesStatus = true;
+                if (statusFilter === 'founder') {
+                    matchesStatus = runner.founderStatus === '✅';
+                } else if (statusFilter === 'pending') {
+                    matchesStatus = runner.founderStatus === 'pending';
+                } else if (statusFilter === 'regular') {
+                    matchesStatus = !runner.founderStatus || runner.founderStatus === '';
+                }
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            populateTable(filteredData);
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = 'all';
+            filteredData = [...runnersData];
+            populateTable(filteredData);
+        }
+        
+        // Calculate and display stats
+        function updateStats() {
+            // Total runners
+            document.getElementById('total-runners').textContent = runnersData.length;
+            
+            // Count founders
+            const founders = runnersData.filter(runner => runner.founderStatus === '✅').length;
+            document.getElementById('total-founders').textContent = founders;
+            
+            // Count pending members
+            const pending = runnersData.filter(runner => runner.founderStatus === 'pending').length;
+            document.getElementById('total-pending').textContent = pending;
+            
+            // Find fastest pace
+            const fastestPace = runnersData.reduce((fastest, runner) => {
+                const pace = parseFloat(runner.pace.replace(':', '.'));
+                return pace < fastest ? pace : fastest;
+            }, 10);
+            document.getElementById('fastest-pace').textContent = fastestPace.toString().replace('.', ':');
+            
+            // Find longest streak
+            const longestStreak = runnersData.reduce((longest, runner) => {
+                return runner.streak > longest ? runner.streak : longest;
+            }, 0);
+            document.getElementById('longest-streak').textContent = longestStreak;
+        }
+        
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize table
+            populateTable(runnersData);
+            updateStats();
+            
+            // Add event listeners for filters
+            document.getElementById('search-input').addEventListener('input', filterData);
+            document.getElementById('status-filter').addEventListener('change', filterData);
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        });
+    </script>
+</body>
+</html>
